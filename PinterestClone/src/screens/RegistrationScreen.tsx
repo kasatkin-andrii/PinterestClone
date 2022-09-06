@@ -4,6 +4,7 @@ import Icon from 'react-native-vector-icons/AntDesign'
 import auth from '@react-native-firebase/auth'
 
 const RegistrationScreen = () => {
+  const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [errorText, setErrorText] = useState('')
@@ -14,6 +15,10 @@ const RegistrationScreen = () => {
 
   const clearEmailInput = () => setEmail(() => '')
 
+  const clearNameInput = () => setName(() => '')
+
+  const nameIsValid = (varName: string) => /^[a-zA-Z\-]+$/.test(varName)
+
   const emailIsValid = (varEmail: string) =>
     /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(varEmail)
 
@@ -22,9 +27,20 @@ const RegistrationScreen = () => {
 
   const Registration = async () => {
     try {
-      if (emailIsValid(email) && passwordIsValid(password)) {
+      if (
+        emailIsValid(email) &&
+        passwordIsValid(password) &&
+        nameIsValid(name)
+      ) {
         setErrorText('')
-        await auth().createUserWithEmailAndPassword(email, password)
+        const {user} = await auth().createUserWithEmailAndPassword(
+          email,
+          password,
+        )
+
+        await user.updateProfile({
+          displayName: name,
+        })
       } else {
         throw new Error('Email or password is invalid!')
       }
@@ -36,6 +52,25 @@ const RegistrationScreen = () => {
   return (
     <View style={styles.root}>
       <View style={styles.inputsContainer}>
+        <View style={styles.inputContainer}>
+          <TextInput
+            style={styles.input}
+            placeholderTextColor={'black'}
+            placeholder="Enter your name"
+            value={name}
+            onChangeText={setName}
+            autoCapitalize="none"
+          />
+          <TouchableOpacity onPress={clearNameInput}>
+            <Icon
+              style={styles.icon}
+              name="closecircle"
+              size={23}
+              color={'#232323'}
+            />
+          </TouchableOpacity>
+        </View>
+
         <View style={styles.inputContainer}>
           <TextInput
             style={styles.input}

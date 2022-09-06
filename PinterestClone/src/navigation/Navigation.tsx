@@ -20,6 +20,7 @@ const Navigation = () => {
       setUser({
         id: user != null ? user.uid : null,
         email: user != null ? user.email : null,
+        displayName: user != null ? user.displayName : null,
       }),
     )
 
@@ -28,10 +29,27 @@ const Navigation = () => {
     }
   }
 
+  const onUserChanged = (user: any) => {
+    dispatch(
+      setUser({
+        id: user != null ? user.uid : null,
+        email: user != null ? user.email : null,
+        displayName: user != null ? user.displayName : null,
+      }),
+    )
+  }
+
   useEffect(() => {
     const subscriber = auth().onAuthStateChanged(onAuthChanged)
 
     return subscriber // unsubscribe on unmount
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
+
+  useEffect(() => {
+    const changeUser = auth().onUserChanged(onUserChanged)
+
+    return changeUser
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [])
 
