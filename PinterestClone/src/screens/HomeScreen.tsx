@@ -1,24 +1,10 @@
 import {StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import React from 'react'
-import {useSelector, useDispatch} from 'react-redux'
-import {decrement, increment} from '../redux/counterSlice'
-import {RootState} from '../redux/store'
 
 const HomeScreen = () => {
-  const count = useSelector((state: RootState) => state.counter.value)
-  const dispatch = useDispatch()
-
   return (
     <View style={styles.root}>
-      <Text style={styles.text}>{count}</Text>
-      <View style={styles.cont}>
-        <TouchableOpacity onPress={() => dispatch(decrement())}>
-          <Text style={styles.text}>-</Text>
-        </TouchableOpacity>
-        <TouchableOpacity onPress={() => dispatch(increment())}>
-          <Text style={styles.text}>+</Text>
-        </TouchableOpacity>
-      </View>
+      <Text>Hello</Text>
     </View>
   )
 }
