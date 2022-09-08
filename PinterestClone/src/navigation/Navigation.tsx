@@ -15,14 +15,20 @@ const Navigation = () => {
 
   const [initializing, setInitializing] = useState(true)
 
-  const onAuthChanged = (user: any) => {
+  const setUserFunc = (user: any) => {
     dispatch(
       setUser({
         id: user != null ? user.uid : null,
         email: user != null ? user.email : null,
         displayName: user != null ? user.displayName : null,
+        photoUrl: user != null ? user.photoURL : null,
       }),
     )
+    //console.log(user)
+  }
+
+  const onAuthChanged = (user: any) => {
+    setUserFunc(user)
 
     if (initializing) {
       setInitializing(false)
@@ -30,13 +36,7 @@ const Navigation = () => {
   }
 
   const onUserChanged = (user: any) => {
-    dispatch(
-      setUser({
-        id: user != null ? user.uid : null,
-        email: user != null ? user.email : null,
-        displayName: user != null ? user.displayName : null,
-      }),
-    )
+    setUserFunc(user)
   }
 
   useEffect(() => {

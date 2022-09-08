@@ -4,12 +4,14 @@ export interface UserState {
   id: string | null
   email: string | null
   displayName: string | null
+  photoUrl: string | null
 }
 
 const initialState: UserState = {
   id: null,
   email: null,
   displayName: null,
+  photoUrl: null,
 }
 
 export const userSlice = createSlice({
@@ -20,6 +22,7 @@ export const userSlice = createSlice({
       state.id = action.payload.id
       state.email = action.payload.email
       state.displayName = action.payload.displayName
+      state.photoUrl = action.payload.photoUrl
     },
   },
 })
