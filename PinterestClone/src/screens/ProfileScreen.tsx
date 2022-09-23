@@ -1,16 +1,10 @@
-import {
-  Image,
-  Modal,
-  StyleSheet,
-  Text,
-  TouchableOpacity,
-  View,
-} from 'react-native'
+import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
 import React, {useState} from 'react'
 import {useSelector} from 'react-redux'
 import {RootState} from '../redux/store'
 import auth from '@react-native-firebase/auth'
-import ImageCropPicker from 'react-native-image-crop-picker'
+import CustomModalPicker from '../components/CustomModalPicker'
+import {uploadImage} from '../helper'
 
 const ProfileScreen = () => {
   const [editImageVisible, setEditImageVisible] = useState(false)
@@ -23,38 +17,10 @@ const ProfileScreen = () => {
     await auth().signOut()
   }
 
-  const takePhotoFromCamera = async () => {
-    try {
-      const {path} = await ImageCropPicker.openCamera({
-        compressImageMaxWidth: 300,
-        compressImageMaxHeight: 300,
-        cropping: true,
-        compressImageQuality: 0.7,
-      })
+  const uploadAndUpdateProfile = async (path: string) => {
+    const url = await uploadImage(path)
 
-      await auth().currentUser?.updateProfile({photoURL: path})
-
-      setEditImageVisible(() => false)
-    } catch (error) {
-      console.log(error)
-    }
-  }
-
-  const chooseFromGallery = async () => {
-    try {
-      const {path} = await ImageCropPicker.openPicker({
-        compressImageMaxWidth: 300,
-        compressImageMaxHeight: 300,
-        cropping: true,
-        compressImageQuality: 0.7,
-      })
-
-      await auth().currentUser?.updateProfile({photoURL: path})
-
-      setEditImageVisible(() => false)
-    } catch (error) {
-      console.log(error)
-    }
+    await auth().currentUser?.updateProfile({photoURL: url})
   }
 
   return (
@@ -77,38 +43,11 @@ const ProfileScreen = () => {
       <TouchableOpacity onPress={signOut}>
         <Text style={styles.text}>Sign out</Text>
       </TouchableOpacity>
-      <Modal
-        visible={editImageVisible}
-        animationType={'slide'}
-        transparent={true}>
-        <View style={styles.modal}>
-          <TouchableOpacity
-            style={styles.modalSpaceClose}
-            onPress={() => setEditImageVisible(() => false)}
-          />
-          <View style={styles.btnModalContainer}>
-            <View style={styles.modalTitleContainer}>
-              <Text style={styles.modalTitle}>Upload Photo</Text>
-              <Text style={styles.modalDecs}>Choose your profile picture</Text>
-            </View>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={takePhotoFromCamera}>
-              <Text style={styles.modalBtnText}>Take photo</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={chooseFromGallery}>
-              <Text style={styles.modalBtnText}>Select from gallery</Text>
-            </TouchableOpacity>
-            <TouchableOpacity
-              style={styles.modalBtn}
-              onPress={() => setEditImageVisible(() => false)}>
-              <Text style={styles.modalBtnText}>Cancel</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <CustomModalPicker
+        editImageVisible={editImageVisible}
+        setEditImageVisible={setEditImageVisible}
+        customCallback={uploadAndUpdateProfile}
+      />
     </View>
   )
 }

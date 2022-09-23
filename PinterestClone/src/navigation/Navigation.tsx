@@ -24,7 +24,7 @@ const Navigation = () => {
         photoUrl: user != null ? user.photoURL : null,
       }),
     )
-    //console.log(user)
+    console.log(user)
   }
 
   const onAuthChanged = (user: any) => {
@@ -59,7 +59,6 @@ const Navigation = () => {
 
   return (
     <NavigationContainer>
-      {/* <HomeStack /> */}
       {email ? <HomeStack /> : <LoginStack />}
     </NavigationContainer>
   )
