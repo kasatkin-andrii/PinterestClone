@@ -2,6 +2,7 @@ import {StyleSheet, Text, TextInput, TouchableOpacity, View} from 'react-native'
 import React, {useState} from 'react'
 import Icon from 'react-native-vector-icons/AntDesign'
 import auth from '@react-native-firebase/auth'
+import firestore from '@react-native-firebase/firestore'
 
 const RegistrationScreen = () => {
   const [name, setName] = useState('')
@@ -41,6 +42,14 @@ const RegistrationScreen = () => {
         await user.updateProfile({
           displayName: name,
         })
+
+        await firestore().collection('users').doc(user.uid).set({
+          userId: user.uid,
+          username: name,
+          email: email,
+          userImage: user.photoURL,
+          pins: [],
+        })
       } else {
         throw new Error('Email or password is invalid!')
       }
@@ -60,6 +69,7 @@ const RegistrationScreen = () => {
             value={name}
             onChangeText={setName}
             autoCapitalize="none"
+            autoFocus
           />
           <TouchableOpacity onPress={clearNameInput}>
             <Icon

@@ -25,9 +25,7 @@ const CreatePinScreen = () => {
   const [description, setDescription] = useState('')
   const [imageUrl, setImageUrl] = useState('')
 
-  const {id, displayName, photoUrl} = useSelector(
-    (state: RootState) => state.user,
-  )
+  const {userId} = useSelector((state: RootState) => state.user)
 
   const pickImage = (path: string) => {
     setImageUrl(() => path)
@@ -40,15 +38,22 @@ const CreatePinScreen = () => {
         const url = await uploadImage(imageUrl)
 
         const newPin = {
-          userId: id,
-          userName: displayName,
-          userImage: photoUrl,
+          userId: userId,
           title,
           description,
           imageUrl: url,
         }
 
-        await firestore().collection('pins').add(newPin)
+        const {id} = await firestore().collection('pins').add(newPin)
+
+        const dbUser = await firestore().collection('users').doc(userId!!).get()
+
+        await firestore()
+          .collection('users')
+          .doc(userId!!)
+          .update({
+            pins: [...dbUser.data()?.pins, id],
+          })
 
         setTitle(() => '')
         setDescription(() => '')

@@ -1,17 +1,19 @@
 import {createSlice} from '@reduxjs/toolkit'
 
 export interface UserState {
-  id: string | null
+  userId: string | null
   email: string | null
-  displayName: string | null
-  photoUrl: string | null
+  username: string | null
+  userImage: string | null
+  pins: string[]
 }
 
 const initialState: UserState = {
-  id: null,
+  userId: null,
   email: null,
-  displayName: null,
-  photoUrl: null,
+  username: null,
+  userImage: null,
+  pins: [],
 }
 
 export const userSlice = createSlice({
@@ -19,10 +21,11 @@ export const userSlice = createSlice({
   initialState,
   reducers: {
     setUser: (state, action) => {
-      state.id = action.payload.id
+      state.userId = action.payload.userId
       state.email = action.payload.email
-      state.displayName = action.payload.displayName
-      state.photoUrl = action.payload.photoUrl
+      state.username = action.payload.username
+      state.userImage = action.payload.userImage
+      state.pins = action.payload.pins
     },
   },
 })

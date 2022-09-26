@@ -15,8 +15,6 @@ export interface PinProps {
   title: string
   imageUrl: string
   userId: string
-  userName: string
-  userImage: string
 }
 
 const HomeScreen = ({navigation}: any) => {

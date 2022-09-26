@@ -70,6 +70,7 @@ const LoginScreen = () => {
             value={email}
             onChangeText={setEmail}
             autoCapitalize="none"
+            autoFocus
           />
           <TouchableOpacity onPress={clearEmailInput}>
             <Icon

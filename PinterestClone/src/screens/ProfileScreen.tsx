@@ -1,17 +1,53 @@
 import {Image, StyleSheet, Text, TouchableOpacity, View} from 'react-native'
-import React, {useState} from 'react'
+import React, {useEffect, useState} from 'react'
 import {useSelector} from 'react-redux'
 import {RootState} from '../redux/store'
 import auth from '@react-native-firebase/auth'
 import CustomModalPicker from '../components/CustomModalPicker'
 import {uploadImage} from '../helper'
+import firestore from '@react-native-firebase/firestore'
+import BackButton from '../components/BackButton'
 
-const ProfileScreen = () => {
+interface ProfileUserProps {
+  username: string
+  email: string
+  userImage: string
+}
+
+const ProfileScreen = ({route}: any) => {
   const [editImageVisible, setEditImageVisible] = useState(false)
+  const [itsMe, setItsMe] = useState(false)
+  const [user, setUser] = useState<ProfileUserProps>({} as ProfileUserProps)
 
-  const {email, displayName, photoUrl} = useSelector(
+  const {userId, email, username, userImage} = useSelector(
     (state: RootState) => state.user,
   )
+
+  useEffect(() => {
+    userId === route.params.userId
+      ? setItsMe(() => true)
+      : setItsMe(() => false)
+
+    userId !== route.params.userId && loadUserDetails()
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [route.params.userId])
+
+  const loadUserDetails = async () => {
+    const dbUser = await firestore()
+      .collection('users')
+      .doc(route.params.userId)
+      .get()
+
+    const newData = dbUser.data()
+
+    if (newData) {
+      setUser(() => ({
+        username: newData.username,
+        email: newData.email,
+        userImage: newData.userImage,
+      }))
+    }
+  }
 
   const signOut = async () => {
     await auth().signOut()
@@ -20,34 +56,60 @@ const ProfileScreen = () => {
   const uploadAndUpdateProfile = async (path: string) => {
     const url = await uploadImage(path)
 
+    await firestore().collection('users').doc(userId!!).update({
+      userImage: url,
+    })
+
     await auth().currentUser?.updateProfile({photoURL: url})
   }
 
+  console.log(itsMe)
+
   return (
     <View style={styles.root}>
-      <TouchableOpacity
-        onPress={() => setEditImageVisible(() => true)}
-        style={styles.imageContainer}>
-        {photoUrl !== null ? (
-          <Image source={{uri: photoUrl}} style={styles.image} />
-        ) : (
-          <Text style={styles.label}>
-            {displayName !== null ? displayName[0].toUpperCase() : null}
-          </Text>
-        )}
+      {itsMe ? (
+        <TouchableOpacity
+          onPress={() => setEditImageVisible(() => true)}
+          style={styles.imageContainer}>
+          {userImage !== null ? (
+            <Image source={{uri: userImage}} style={styles.image} />
+          ) : (
+            <Text style={styles.label}>
+              {username !== null ? username[0].toUpperCase() : null}
+            </Text>
+          )}
 
-        <Text style={styles.edit}>Edit</Text>
-      </TouchableOpacity>
-      <Text style={styles.displayName}>{displayName}</Text>
-      <Text style={styles.email}>{email}</Text>
-      <TouchableOpacity onPress={signOut}>
-        <Text style={styles.text}>Sign out</Text>
-      </TouchableOpacity>
+          <Text style={styles.edit}>Edit</Text>
+        </TouchableOpacity>
+      ) : (
+        <View style={styles.imageContainer}>
+          {user.userImage !== null ? (
+            <Image source={{uri: user?.userImage}} style={styles.image} />
+          ) : (
+            <Text style={styles.label}>
+              {user?.username !== null ? user?.username[0].toUpperCase() : null}
+            </Text>
+          )}
+        </View>
+      )}
+      <Text style={styles.displayName}>{itsMe ? username : user.username}</Text>
+      <Text style={styles.email}>{itsMe ? email : user.email}</Text>
+      {itsMe ? (
+        <TouchableOpacity onPress={signOut}>
+          <Text style={styles.text}>Sign out</Text>
+        </TouchableOpacity>
+      ) : null}
       <CustomModalPicker
         editImageVisible={editImageVisible}
         setEditImageVisible={setEditImageVisible}
         customCallback={uploadAndUpdateProfile}
       />
+
+      {route.params.fromHomePage ? (
+        <View style={styles.backButton}>
+          <BackButton size={30} />
+        </View>
+      ) : null}
     </View>
   )
 }
@@ -153,5 +215,17 @@ const styles = StyleSheet.create({
   modalSpaceClose: {
     flex: 1,
     width: '100%',
+  },
+  backButton: {
+    position: 'absolute',
+    top: 10,
+    left: 10,
+    backgroundColor: 'rgba(255,255,255, 0.25)',
+    borderRadius: 10,
+    shadowColor: '#171717',
+    shadowOffset: {width: -2, height: 4},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
 })

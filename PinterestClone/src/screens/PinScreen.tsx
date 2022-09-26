@@ -9,8 +9,10 @@ import AntDesign from 'react-native-vector-icons/AntDesign'
 
 const PinScreen = ({route, navigation}: any) => {
   const [pin, setPin] = useState<PinProps | null>(null)
+  const [username, setUsername] = useState<string | null>(null)
+  const [userImage, setUserImage] = useState<string | null>(null)
 
-  const {id} = useSelector((state: RootState) => state.user)
+  const {userId} = useSelector((state: RootState) => state.user)
 
   useEffect(() => {
     initPin()
@@ -25,9 +27,22 @@ const PinScreen = ({route, navigation}: any) => {
         .doc(route.params.pinId)
         .get()
 
-      //console.log(dataPin.data())
+      console.log(dataPin.data())
 
       setPin(() => dataPin.data() as PinProps)
+
+      const dbUser = await firestore()
+        .collection('users')
+        .doc(dataPin.data()?.userId)
+        .get()
+
+      const dbData = dbUser.data()
+
+      if (dbData) {
+        console.log(dbData)
+        setUsername(() => dbData.username)
+        setUserImage(() => dbData.userImage)
+      }
     } catch (error) {
       console.log(error)
     }
@@ -36,6 +51,17 @@ const PinScreen = ({route, navigation}: any) => {
   const deletePin = async () => {
     try {
       await firestore().collection('pins').doc(route.params.pinId).delete()
+
+      const dbUser = await firestore().collection('users').doc(userId!!).get()
+
+      await firestore()
+        .collection('users')
+        .doc(userId!!)
+        .update({
+          pins: dbUser
+            .data()
+            ?.pins.filter((item: string) => item !== route.params.pinId),
+        })
     } catch (error) {
       console.log(error)
     } finally {
@@ -49,8 +75,24 @@ const PinScreen = ({route, navigation}: any) => {
         <Image source={{uri: pin?.imageUrl}} style={styles.image} />
 
         <View style={styles.profileContainer}>
-          <Image source={{uri: pin?.userImage}} style={styles.profileImage} />
-          <Text style={styles.userName}>{pin?.userName}</Text>
+          <Pressable
+            onPress={() =>
+              navigation.push('Profile', {
+                userId: pin?.userId,
+                fromHomePage: true,
+              })
+            }>
+            {userImage ? (
+              <Image source={{uri: userImage}} style={styles.profileImage} />
+            ) : (
+              <View style={styles.profileImage}>
+                <Text style={styles.label}>
+                  {username !== null ? username[0].toUpperCase() : null}
+                </Text>
+              </View>
+            )}
+          </Pressable>
+          {username ? <Text style={styles.userName}>{username}</Text> : null}
         </View>
 
         <View style={styles.textContainer}>
@@ -61,7 +103,7 @@ const PinScreen = ({route, navigation}: any) => {
 
       <Text>{pin?.id}</Text>
 
-      {id === pin?.userId ? (
+      {userId === pin?.userId ? (
         <Pressable onPress={deletePin} style={styles.deleteButton}>
           <AntDesign name="delete" size={25} color={'black'} />
         </Pressable>
@@ -86,6 +128,11 @@ const styles = StyleSheet.create({
     left: 5,
     backgroundColor: 'rgba(255,255,255, 0.25)',
     borderRadius: 10,
+    shadowColor: '#171717',
+    shadowOffset: {width: -2, height: 4},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 2,
   },
   image: {
     width: '100%',
@@ -100,6 +147,13 @@ const styles = StyleSheet.create({
     width: 50,
     height: 50,
     borderRadius: 25,
+    justifyContent: 'center',
+    alignItems: 'center',
+    shadowColor: '#171717',
+    shadowOffset: {width: -2, height: 5},
+    shadowOpacity: 0.2,
+    shadowRadius: 3,
+    elevation: 3,
   },
   profileContainer: {
     flexDirection: 'row',
@@ -137,5 +191,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'rgba(255,255,255, 0.25)',
     borderRadius: 10,
     padding: 4,
+  },
+  label: {
+    color: 'black',
+    fontSize: 30,
   },
 })

@@ -11,10 +11,13 @@ import CreatePinScreen from '../screens/CreatePinScreen'
 import ChatScreen from '../screens/ChatScreen'
 import {StyleSheet, View} from 'react-native'
 import PinScreen from '../screens/PinScreen'
+import {useSelector} from 'react-redux'
+import {RootState} from '../redux/store'
 
 type HomeStackParamList = {
   HomeScreen: undefined
   Pin: {pinId: string}
+  Profile: {userId: string; fromHomePage: boolean}
 }
 
 const Tab = createBottomTabNavigator()
@@ -25,10 +28,13 @@ const HomeNativeStack = () => (
   <Stack.Navigator screenOptions={{headerShown: false}}>
     <Stack.Screen name="HomeScreen" component={HomeScreen} />
     <Stack.Screen name="Pin" component={PinScreen} />
+    <Stack.Screen name="Profile" component={ProfileScreen} />
   </Stack.Navigator>
 )
 
 const HomeStack = () => {
+  const {userId} = useSelector((state: RootState) => state.user)
+
   return (
     <Tab.Navigator
       screenOptions={{
@@ -83,6 +89,7 @@ const HomeStack = () => {
             <Ionicons name="person" size={size} color={color} />
           ),
         }}
+        initialParams={{userId: userId, fromHomePage: false}}
       />
     </Tab.Navigator>
   )
